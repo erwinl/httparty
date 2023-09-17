@@ -49,7 +49,7 @@ module HTTParty
           # https://github.com/jnunemaker/httparty/pull/585
           memo << %(; filename="#{file_name(value).gsub(/["\r\n]/, MULTIPART_FORM_DATA_REPLACEMENT_TABLE)}") if file?(value)
           memo << NEWLINE
-          memo << "Content-Type: #{content_type(value)}#{NEWLINE}" if file?(value)
+          memo << "Content-Type: #{content_type(value)}#{NEWLINE}" if file_or_json?(value)
           memo << NEWLINE
           memo << content_body(value)
           memo << NEWLINE
@@ -70,6 +70,9 @@ module HTTParty
 
       def file?(object)
         object.respond_to?(:path) && object.respond_to?(:read)
+      end
+      def file_or_json?(object)
+        file?(object) || is_json_object?(object)
       end
 
       def normalize_query(query)
@@ -101,6 +104,7 @@ module HTTParty
         end
         # mime ? mime.content_type : 'application/octet-stream'
       end
+
       def is_json_object?(object)
         result = JSON.parse(object)
         result.is_a?(Hash) || result.is_a?(Array)
