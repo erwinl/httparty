@@ -92,7 +92,20 @@ module HTTParty
       def content_type(object)
         return object.content_type if object.respond_to?(:content_type)
         mime = MiniMime.lookup_by_filename(object.path)
-        mime ? mime.content_type : 'application/octet-stream'
+        if mime
+          mime.content_type
+        elsif is_json_object?(object)
+          'application/json'
+        else
+          'application/octet-stream'
+        end
+        # mime ? mime.content_type : 'application/octet-stream'
+      end
+      def is_json_object?(object)
+        result = JSON.parse(object)
+        result.is_a?(Hash) || result.is_a?(Array)
+      rescue JSON::ParserError, TypeError
+        false
       end
 
       def file_name(object)
